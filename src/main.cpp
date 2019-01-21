@@ -248,6 +248,50 @@ int main() {
 		// previous path size
   		int prev_size = previous_path_x.size();
 
+		/*	
+		 * Sensor fusion
+		 */
+
+		// representative of the previous path laps points S. 
+		if(prev_size > 0)
+		   car_s = end_path_s;
+
+		bool too_close = false;
+
+		// find_v to use
+		for(int i = 0; i <sensor_fusion.size(); i++)
+		{
+		   // car is in my lane
+		   // D, can think of as saying whether a car is in what lane.
+		   float d = sensor_fusion[i][6]; // get the center value of the lane
+		   if( d < (2+4*lane+2) && d > (2+4*lane-2) ) // +-2 meter since size of lane is 4 m
+		   {
+		      // check the speed of the car.
+		      double vx = sensor_fusion[i][3];
+		      double vy = sensor_fusion[i][4];
+		      // get the velocity magnitude (distance formular)
+		      double check_speed = sqrt(vx*vx + vy*vy);
+		      // S value ... how closed is the front of car.
+		      double check_car_s = sensor_fusion[i][5];
+
+		      //if using previous points can project s value outwards in time.
+		      // what we want to project?
+		      // Because if we are using the previous path points, we are not quite there yet.
+		      // current car is still a little bit under that. want to be looking at what the car will look like in the future.
+		      check_car_s += ((double)prev_size * 0.02 * check_speed);
+
+		      //check s values greater than mine and s gap
+		      if((check_car_s > car_s) && ((check_car_s-car_s) < 30) )
+		      {
+			    // need implement logic to avoid accident.
+			    // either change lane, or slow down. 
+			    ref_vel = 29.5; //mph
+		      }
+		   }
+  		}
+		/*
+		 * end of Sensor fusion
+		 */ 
           	json msgJson;
 
 		// Create a list of widely spaced (x, y) waypoints, evenly spaced at 30m
