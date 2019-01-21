@@ -213,7 +213,7 @@ int main() {
     int lane = 1;
 
     // a reference velocity in mph 
-    double ref_vel = 49.5; 
+    double ref_vel = 0; 
 
     if (length && length > 2 && data[0] == '4' && data[1] == '2') {
 
@@ -285,10 +285,22 @@ int main() {
 		      {
 			    // need implement logic to avoid accident.
 			    // either change lane, or slow down. 
-			    ref_vel = 29.5; //mph
+			    //ref_vel = 29.5; //mph
+			    too_close = true;
 		      }
+		      else
+			    too_close = false;
 		   }
   		}
+
+		// if front of the vehicle is too close slow down.
+		if(too_close)
+		  ref_vel -= .224; // 5 mps 
+	
+		// if velocity is less then 49.5 mph then speed up 
+		else if(ref_vel < 49.5)
+		  ref_vel += .224; 
+
 		/*
 		 * end of Sensor fusion
 		 */ 
