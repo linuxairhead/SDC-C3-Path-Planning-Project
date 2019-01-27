@@ -266,7 +266,7 @@ int main() {
 		   float d = sensor_fusion[i][6]; // get the center value of the lane
 		   if( d < (2+4*lane+2) && d > (2+4*lane-2) ) // +-2 meter since size of lane is 4 m
 		   {
-		      // check the speed of the car.
+		      // check the speed of the car in same lane.
 		      double vx = sensor_fusion[i][3];
 		      double vy = sensor_fusion[i][4];
 		      // get the velocity magnitude (distance formular)
@@ -287,6 +287,10 @@ int main() {
 			    // either change lane, or slow down. 
 			    //ref_vel = 29.5; //mph
 			    too_close = true;
+			 
+			    // change lane when front of car is too slow
+			    if(lane > 0 )
+				lane = 0;
 		      }
 		      else
 			    too_close = false;
