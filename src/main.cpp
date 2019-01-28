@@ -10,6 +10,14 @@
 #include "json.hpp"
 #include "spline.h"
 
+#define DEBUG 1
+
+#if  DEBUG
+#define PATH_DEBUG(fn, log) std::cout << fn << " : " << log << "\n";
+#else
+#define PATH_DEBUG(fn, log);
+#endif
+
 using namespace std;
 
 // for convenience
@@ -283,6 +291,7 @@ int main() {
 		      //check s values greater than mine and s gap
 		      if((check_car_s > car_s) && ((check_car_s-car_s) < 30) )
 		      {
+		            PATH_DEBUG("main", "in too close statement");
 			    // need implement logic to avoid accident.
 			    // either change lane, or slow down. 
 			    //ref_vel = 29.5; //mph
@@ -292,10 +301,17 @@ int main() {
 			    if(lane > 0 )
 				lane = 0;
 		      }
-		      else
-			    too_close = false;
+		      else 
+                      {
+		            PATH_DEBUG("main", "not in too close statement");
+		
+	                    too_close = false;
+                      }
 		   }
   		}
+
+		PATH_DEBUG("main", "too_close " + to_string(too_close));
+		PATH_DEBUG("main", "lane " + to_string(lane));
 
 		// if front of the vehicle is too close slow down.
 		if(too_close)
@@ -423,6 +439,10 @@ int main() {
        		   next_x_vals.push_back(x_point);
           	   next_y_vals.push_back(y_point);
     		}
+		int n = next_x_vals.size();
+
+		PATH_DEBUG("main", "next_x_vals" + to_string(next_x_vals[n-1]));
+		PATH_DEBUG("main", "next_y_vals" + to_string(next_y_vals[n-1]));
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
           	msgJson["next_x"] = next_x_vals;
