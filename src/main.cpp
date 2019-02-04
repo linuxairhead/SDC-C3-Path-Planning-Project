@@ -265,6 +265,8 @@ int main() {
 		   car_s = end_path_s;
 
 		bool too_close = false;
+		bool car_left = false;
+		bool car_right = false;
 
 		// find_v to use
 		for(int i = 0; i <sensor_fusion.size(); i++)
@@ -272,42 +274,52 @@ int main() {
 		   // car is in my lane
 		   // D, can think of as saying whether a car is in what lane.
 		   float d = sensor_fusion[i][6]; // get the center value of the lane
-		   if( d < (2+4*lane+2) && d > (2+4*lane-2) ) // +-2 meter since size of lane is 4 m
-		   {
-		      // check the speed of the car in same lane.
-		      double vx = sensor_fusion[i][3];
-		      double vy = sensor_fusion[i][4];
-		      // get the velocity magnitude (distance formular)
-		      double check_speed = sqrt(vx*vx + vy*vy);
-		      // S value ... how closed is the front of car.
-		      double check_car_s = sensor_fusion[i][5];
-
-		      //if using previous points can project s value outwards in time.
-		      // what we want to project?
-		      // Because if we are using the previous path points, we are not quite there yet.
-		      // current car is still a little bit under that. want to be looking at what the car will look like in the future.
-		      check_car_s += ((double)prev_size * 0.02 * check_speed);
-
-		      //check s values greater than mine and s gap
-		      if((check_car_s > car_s) && ((check_car_s-car_s) < 30) )
-		      {
-		            PATH_DEBUG("main", "in too close statement");
-			    // need implement logic to avoid accident.
-			    // either change lane, or slow down.
-			    //ref_vel = 29.5; //mph
-			    too_close = true;
-
-			    // change lane when front of car is too slow
-			    if(lane > 0 )
-				lane = 0;
-		      }
-		      else
-                      {
-		            PATH_DEBUG("main", "not in too close statement");
-
-	                    too_close = false;
-                      }
+		   //if( d < (2+4*lane+2) && d > (2+4*lane-2) ) // +-2 meter since size of lane is 4 m
+                   int getLaneNum = -1;
+		   if( d >= 0 && d < 4 ) {
+			getLaneNum = 0;
+		        PATH_DEBUG("main", "get Lane Number is 0");
+		   } else if ( d >= 4 && d < 8 ) {
+			getLaneNum = 1;
+		        PATH_DEBUG("main", "get Lane Number is 1");
+		   } else if ( d >= 8 && d < 12) {
+			getLaneNum = 2;
+		        PATH_DEBUG("main", "get Lane Number is 2");
 		   }
+
+		   // check the speed of the car in same lane.
+		   double vx = sensor_fusion[i][3];
+		   double vy = sensor_fusion[i][4];
+		   // get the velocity magnitude (distance formular)
+		   double check_speed = sqrt(vx*vx + vy*vy);
+		   // S value ... how closed is the front of car.
+		   double check_car_s = sensor_fusion[i][5];
+
+		   //if using previous points can project s value outwards in time.
+		   // what we want to project?
+		   // Because if we are using the previous path points, we are not quite there yet.
+		   // current car is still a little bit under that. want to be looking at what the car will look like in the future.
+		   check_car_s += ((double)prev_size * 0.02 * check_speed);
+
+		   //check s values greater than mine and s gap
+		   if((check_car_s > car_s) && ((check_car_s-car_s) < 30) )
+		   {
+		        PATH_DEBUG("main", "in too close statement");
+			// need implement logic to avoid accident.
+			// either change lane, or slow down.
+			//ref_vel = 29.5; //mph
+			too_close = true;
+
+			// change lane when front of car is too slow
+			if(lane > 0 )
+			   lane = 0;
+		   }
+		   else
+                   {
+		        PATH_DEBUG("main", "not in too close statement");
+
+	                too_close = false;
+                   }
 		}
 
 		PATH_DEBUG("main", "too_close " + to_string(too_close));
