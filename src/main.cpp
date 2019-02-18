@@ -301,6 +301,9 @@ int main() {
 		   // current car is still a little bit under that. want to be looking at what the car will look like in the future.
 		   check_car_s += ((double)prev_size * 0.02 * check_speed);
 
+                   PATH_DEBUG("main", "check car s " + to_string(check_car_s));
+                   PATH_DEBUG("main", "car s" + to_string(car_s));
+
 		   //check s values greater than mine and s gap
 		   if((check_car_s > car_s) && ((check_car_s-car_s) < 30) )
 		   {
@@ -312,7 +315,10 @@ int main() {
 
 			// change lane when front of car is too slow
 			if(lane > 0 )
+                        {
 			   lane = 0;
+		           PATH_DEBUG("main", "Changed to Lane Number is 0");
+                        }
 		   }
 		   else
                    {
