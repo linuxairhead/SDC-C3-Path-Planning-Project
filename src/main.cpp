@@ -276,7 +276,7 @@ int main() {
 		   float d = sensor_fusion[i][6]; // get the center value of the lane
 
                    int otherCarLaneNum = -1;
-		   if( d > 0 && d < 4 ) {
+		   if( d >= 0 && d < 4 ) {
 			otherCarLaneNum = 0;
 		        PATH_DEBUG("main", "other car is at lane 0");
 		   } else if ( d >= 4 && d < 8 ) {
@@ -305,14 +305,14 @@ int main() {
                    PATH_DEBUG("main", "car s " + to_string(car_s));
 
 		   if ( otherCarLaneNum == lane ) {
-                       // in same lane, a car is ahead of me and less then 30s
-                       car_ahead |= check_car_s > car_s && check_car_s < car_s + 30;
+                       // in same lane, a car is ahead of me and less then 20m
+                       car_ahead |= check_car_s > car_s && check_car_s < car_s + 20;
                    } else if ( otherCarLaneNum == lane - 1 ) {
-                       // in left lane, there is a car between 30s behine to 30s ahead
-                       car_left |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
+                       // in left lane, there is a car between 30s behine to 20m ahead
+                       car_left |= car_s - 20 < check_car_s && car_s + 20 > check_car_s;
                    } else if ( otherCarLaneNum == lane + 1 ) {
-                       // in right lane, there is a car between 30s behine to 30s ahead
-                       car_right |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
+                       // in right lane, there is a car between 30s behine to 20m ahead
+                       car_right |= car_s - 20 < check_car_s && car_s + 20 > check_car_s;
                    }
 		}
 
@@ -324,12 +324,12 @@ int main() {
 		// if front of the vehicle is too close slow down.
 		if(car_ahead) {
                   // And if there is no left car and there is a left lane
-                  if( !car_left && lane < 0 ){
+                  if( !car_left && lane > 0 ){
                      // Change to left lane
                      lane--;
 
                   // And if there is no right car and there is a right lane
-                  } else if ( !car_right && lane > 2 ){
+                  } else if ( !car_right && lane < 2 ){
                      // Change to right lane
                      lane++;
 
@@ -337,9 +337,16 @@ int main() {
                   } else
 		     ref_vel -= .224; // 5 mps
 
-		// if velocity is less then 49.5 mph then speed up
-		} else if(ref_vel < 49.5)
-		   ref_vel += .224;
+		} else {
+		   // if velocity is less then 49.5 mph and more then 30 mph then speed up by 2.5 mps
+                   if(ref_vel < 49.5 && ref_vel >= 30) {
+		       ref_vel += .112; //2.5 mps
+                    // if velocity is less then 30mph and more then 25 mph then speed up by 5 mps
+                    } else if(ref_vel < 30 && ref_vel >= 25) {
+                       ref_vel += .224;
+                    } else if(ref_vel < 25) // less then 25mph then speed up by 7.5mps
+                       ref_vel += .336;
+                }
 
 		/*
 		 * end of Sensor fusion
