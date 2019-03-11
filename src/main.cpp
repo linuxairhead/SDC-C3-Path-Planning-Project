@@ -305,14 +305,14 @@ int main() {
                    PATH_DEBUG("main", "car s " + to_string(car_s));
 
 		   if ( otherCarLaneNum == lane ) {
-                       // in same lane, a car is ahead of me and less then 20m
-                       car_ahead |= check_car_s > car_s && check_car_s < car_s + 20;
+                       // in same lane, a car is ahead of me and less then 30m
+                       car_ahead |= check_car_s > car_s && check_car_s < car_s + 30;
                    } else if ( otherCarLaneNum == lane - 1 ) {
-                       // in left lane, there is a car between 30s behine to 20m ahead
-                       car_left |= car_s - 20 < check_car_s && car_s + 20 > check_car_s;
+                       // in left lane, there is a car between 30s behine to 30m ahead
+                       car_left |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
                    } else if ( otherCarLaneNum == lane + 1 ) {
-                       // in right lane, there is a car between 30s behine to 20m ahead
-                       car_right |= car_s - 20 < check_car_s && car_s + 20 > check_car_s;
+                       // in right lane, there is a car between 30s behine to 30m ahead
+                       car_right |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
                    }
 		}
 
