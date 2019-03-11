@@ -338,6 +338,15 @@ int main() {
 		     ref_vel -= .224; // 5 mps
 
 		} else {
+
+                   // if vehicle isn't center lane and there is safe to move to center
+                   // then change lane to center lane
+                   if(lane != 1) {
+                       if((lane ==2 && !car_left) || (lane==0 && !car_right)){
+                          lane = 1;
+                       }
+                   }
+
 		   // if velocity is less then 49.5 mph and more then 30 mph then speed up by 2.5 mps
                    if(ref_vel < 49.5 && ref_vel >= 30) {
 		       ref_vel += .112; //2.5 mps
