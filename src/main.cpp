@@ -264,7 +264,7 @@ int main() {
 		if(prev_size > 0)
 		   car_s = end_path_s;
 
-		bool too_close = false;
+		bool car_ahead = false;
 		bool car_left = false;
 		bool car_right = false;
 
@@ -274,17 +274,17 @@ int main() {
 		   // car is in my lane
 		   // D, can think of as saying whether a car is in what lane.
 		   float d = sensor_fusion[i][6]; // get the center value of the lane
-		   //if( d < (2+4*lane+2) && d > (2+4*lane-2) ) // +-2 meter since size of lane is 4 m
-                   int getLaneNum = -1;
-		   if( d >= 0 && d < 4 ) {
-			getLaneNum = 0;
-		        PATH_DEBUG("main", "get Lane Number is 0");
+
+                   int otherCarLaneNum = -1;
+		   if( d > 0 && d < 4 ) {
+			otherCarLaneNum = 0;
+		        PATH_DEBUG("main", "other car is at lane 0");
 		   } else if ( d >= 4 && d < 8 ) {
-			getLaneNum = 1;
-		        PATH_DEBUG("main", "get Lane Number is 1");
+			otherCarLaneNum = 1;
+		        PATH_DEBUG("main", "other car is at lane 1");
 		   } else if ( d >= 8 && d < 12) {
-			getLaneNum = 2;
-		        PATH_DEBUG("main", "get Lane Number is 2");
+			otherCarLaneNum = 2;
+		        PATH_DEBUG("main", "other car is at lane 2");
 		   }
 
 		   // check the speed of the car in same lane.
@@ -302,42 +302,44 @@ int main() {
 		   check_car_s += ((double)prev_size * 0.02 * check_speed);
 
                    PATH_DEBUG("main", "check car s " + to_string(check_car_s));
-                   PATH_DEBUG("main", "car s" + to_string(car_s));
+                   PATH_DEBUG("main", "car s " + to_string(car_s));
 
-		   //check s values greater than mine and s gap
-		   if((check_car_s > car_s) && ((check_car_s-car_s) < 30) )
-		   {
-		        PATH_DEBUG("main", "in too close statement");
-			// need implement logic to avoid accident.
-			// either change lane, or slow down.
-			//ref_vel = 29.5; //mph
-			too_close = true;
-
-			// change lane when front of car is too slow
-			if(lane > 0 )
-                        {
-			   lane = 0;
-		           PATH_DEBUG("main", "Changed to Lane Number is 0");
-                        }
-		   }
-		   else
-                   {
-		        PATH_DEBUG("main", "not in too close statement");
-
-	                too_close = false;
+		   if ( otherCarLaneNum == lane ) {
+                       // in same lane, a car is ahead of me and less then 30s
+                       car_ahead |= check_car_s > car_s && check_car_s < car_s + 30;
+                   } else if ( otherCarLaneNum == lane - 1 ) {
+                       // in left lane, there is a car between 30s behine to 30s ahead
+                       car_left |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
+                   } else if ( otherCarLaneNum == lane + 1 ) {
+                       // in right lane, there is a car between 30s behine to 30s ahead
+                       car_right |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
                    }
 		}
 
-		PATH_DEBUG("main", "too_close " + to_string(too_close));
-		PATH_DEBUG("main", "lane " + to_string(lane));
+		PATH_DEBUG("main", "ahead " + to_string(car_ahead));
+		PATH_DEBUG("main", "left " + to_string(car_left));
+		PATH_DEBUG("main", "right " + to_string(car_right));
+		PATH_DEBUG("main", "my car is at lane " + to_string(lane));
 
 		// if front of the vehicle is too close slow down.
-		if(too_close)
-		  ref_vel -= .224; // 5 mps
+		if(car_ahead) {
+                  // And if there is no left car and there is a left lane
+                  if( !car_left && lane < 0 ){
+                     // Change to left lane
+                     lane--;
+
+                  // And if there is no right car and there is a right lane
+                  } else if ( !car_right && lane > 2 ){
+                     // Change to right lane
+                     lane++;
+
+                  // otherwise reduce speed
+                  } else
+		     ref_vel -= .224; // 5 mps
 
 		// if velocity is less then 49.5 mph then speed up
-		else if(ref_vel < 49.5)
-		  ref_vel += .224;
+		} else if(ref_vel < 49.5)
+		   ref_vel += .224;
 
 		/*
 		 * end of Sensor fusion
